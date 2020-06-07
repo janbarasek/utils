@@ -17,6 +17,8 @@ use Nette;
  */
 final class Random
 {
+	public const RANGE_VALIDATOR_PATTERN = '0-9a-zA-Z';
+
 	use Nette\StaticClass;
 
 	/**
@@ -24,7 +26,11 @@ final class Random
 	 */
 	public static function generate(int $length = 10, string $charlist = '0-9a-z'): string
 	{
-		$charlist = count_chars(preg_replace_callback('#.-.#', function (array $m): string {
+		$charlist = count_chars(preg_replace_callback('#(.)-(.)#', function (array $m): string {
+			if (!preg_match('/^' . self::RANGE_VALIDATOR_PATTERN . '$/', $m[1]) || !preg_match('/^' . self::RANGE_VALIDATOR_PATTERN . '$/', $m[2])) {
+				throw new Nette\InvalidArgumentException('Range character must match "' . self::RANGE_VALIDATOR_PATTERN . '", but "' . $m[1] . '" - "' . $m[2] . '" given.');
+			}
+
 			return implode('', range($m[0][0], $m[0][2]));
 		}, $charlist), 3);
 		$chLen = strlen($charlist);
